@@ -7,9 +7,9 @@ func _init() -> void:
 	assert(not Rules.is_correct(1, false, -1))
 	assert(Rules.is_correct(1, true, -1))
 	assert(Rules.is_correct(-1, true, 1))
-	assert(Rules.fall_target(100) == 70)
-	assert(Rules.fall_target(12) == 0)
-	assert(Rules.fall_target(200) == 170)
+	assert(Rules.fall_target(100) == 90)
+	assert(Rules.fall_target(7) == 0)
+	assert(Rules.fall_target(200) == 190)
 	assert(Rules.drain_per_sec(0) < Rules.drain_per_sec(200))
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7

@@ -1,7 +1,7 @@
 # KODEX 수익률 계단
 
 무한의 계단을 패러디한 수익률 게임. 한 칸 오를 때마다 +1%, 200%에 가장 빨리 도달하면 끝.
-잘못 밟거나 게이지가 비면 -30%.
+잘못 밟거나 게이지가 비면 -10%.
 
 - 엔진: Godot 4.7.2 (GL Compatibility, 2D)
 - 플레이: `docs/index.html` 을 GitHub Pages 로 서비스 → 주소를 QR 로 배포
@@ -16,7 +16,7 @@
 | `scenes/Main.tscn` | 게임 화면. HUD, 오버레이, 카메라 |
 | `scenes/Stair.tscn`, `scenes/Player.tscn` | 계단 한 칸, 캐릭터. 그림 교체 지점 |
 | `scripts/main.gd` | 게임 흐름 (입력, 추락, 클리어, 기록 저장) |
-| `scripts/rules.gd` | 규칙 상수와 순수 함수 (200칸, -30칸, 게이지 속도) |
+| `scripts/rules.gd` | 규칙 상수와 순수 함수 (200칸, -10칸, 게이지 속도) |
 | `tests/test_rules.gd` | 규칙 헤드리스 검증 |
 | `tools/make_placeholders.gd` | 임시 PNG 생성기 |
 | `assets/` | PNG, 한글 폰트 (Noto Sans KR Bold 서브셋, OFL) |
@@ -72,6 +72,6 @@ G="$HOME/Downloads/Godot.app/Contents/MacOS/Godot"
 | 상수 | 뜻 | 기본 |
 |---|---|---|
 | `TOTAL` | 목표 % | 200 |
-| `FALL_STEPS` | 추락 시 잃는 % | 30 |
+| `FALL_STEPS` | 추락 시 잃는 % | 10 |
 | `ENERGY_GAIN` | 한 칸당 게이지 회복 | 0.14 |
 | `DRAIN_START` / `DRAIN_END` | 초당 게이지 감소 (0% / 200%) | 0.22 / 0.50 |

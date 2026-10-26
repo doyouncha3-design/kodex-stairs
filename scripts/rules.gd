@@ -2,7 +2,7 @@ class_name Rules
 ## 게임 규칙. 노드와 무관한 순수 함수라 헤드리스로 검증한다. (tests/test_rules.gd)
 
 const TOTAL := 200
-const FALL_STEPS := 30
+const FALL_STEPS := 10
 const ENERGY_GAIN := 0.14
 const DRAIN_START := 0.22   # 초당 에너지 감소 (0%)
 const DRAIN_END := 0.50     # 초당 에너지 감소 (200%)

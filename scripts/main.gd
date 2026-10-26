@@ -72,7 +72,7 @@ func _new_game() -> void:
 	_place_player()
 	cam.position = player.position + CAM_OFFSET
 	_update_hud()
-	_show_overlay("KODEX\n수익률 계단", "한 칸 = +1%\n200%까지 가장 빨리 오르세요\n\n잘못 밟으면 -30%\n게이지가 비어도 -30%", "시작")
+	_show_overlay("KODEX\n수익률 계단", "한 칸 = +1%%\n200%%까지 가장 빨리 오르세요\n\n잘못 밟으면 -%d%%\n게이지가 비어도 -%d%%" % [Rules.FALL_STEPS, Rules.FALL_STEPS], "시작")
 
 
 func _show_overlay(t: String, m: String, btn: String) -> void:
