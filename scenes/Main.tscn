@@ -1,0 +1,152 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/bg.png" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="3"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1")
+
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="BG" type="TextureRect" parent="Background"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Stairs" type="Node2D" parent="."]
+
+[node name="Player" parent="." instance=ExtResource("3")]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Timer" type="Label" parent="UI"]
+unique_name_in_owner = true
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 360.0
+offset_bottom = 64.0
+theme_override_font_sizes/font_size = 30
+text = "0.00초"
+
+[node name="Best" type="Label" parent="UI"]
+unique_name_in_owner = true
+offset_left = 360.0
+offset_top = 24.0
+offset_right = 696.0
+offset_bottom = 64.0
+theme_override_colors/font_color = Color(1, 0.8, 0.5, 1)
+theme_override_font_sizes/font_size = 30
+text = "최고 --"
+horizontal_alignment = 2
+
+[node name="Pct" type="Label" parent="UI"]
+unique_name_in_owner = true
+anchor_right = 1.0
+offset_top = 100.0
+offset_bottom = 270.0
+theme_override_font_sizes/font_size = 128
+text = "0%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Delta" type="Label" parent="UI"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+anchor_right = 1.0
+offset_top = 270.0
+offset_bottom = 330.0
+theme_override_font_sizes/font_size = 48
+text = "+1%"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EnergyBg" type="ColorRect" parent="UI"]
+unique_name_in_owner = true
+anchor_right = 1.0
+offset_left = 60.0
+offset_top = 344.0
+offset_right = -60.0
+offset_bottom = 368.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.15)
+
+[node name="EnergyFill" type="ColorRect" parent="UI/EnergyBg"]
+unique_name_in_owner = true
+offset_right = 600.0
+offset_bottom = 24.0
+mouse_filter = 2
+color = Color(0.2, 0.9, 0.4, 1)
+
+[node name="PanelL" type="ColorRect" parent="UI"]
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -240.0
+offset_right = -10.0
+offset_bottom = -24.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.08)
+
+[node name="Label" type="Label" parent="UI/PanelL"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_font_sizes/font_size = 34
+text = "◀ 방향 전환
+(←  /  A)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PanelR" type="ColorRect" parent="UI"]
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = -240.0
+offset_right = -20.0
+offset_bottom = -24.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.08)
+
+[node name="Label" type="Label" parent="UI/PanelR"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_font_sizes/font_size = 34
+text = "오르기 ▲
+(→  /  D)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Flash" type="ColorRect" parent="UI"]
+unique_name_in_owner = true
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(1, 0.1, 0.1, 0)
+
+[node name="Overlay" type="ColorRect" parent="UI"]
+unique_name_in_owner = true
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.72)
+
+[node name="Msg" type="Label" parent="UI/Overlay"]
+unique_name_in_owner = true
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_right = -40.0
+theme_override_font_sizes/font_size = 40
+text = "KODEX 수익률 계단"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
