@@ -108,25 +108,19 @@ func _input(e: InputEvent) -> void:
 			return
 		want = -1 if e.position.x < get_viewport().get_visible_rect().size.x * 0.5 else 1
 	elif e is InputEventKey and e.pressed and not e.echo:
-		if e.keycode == KEY_M:
-			if overlay.visible:
-				_toggle_mode()
-			return
-		if classic:  # Shift/Z = 방향 전환, Space/X = 오르기
-			match e.keycode:
-				KEY_SHIFT, KEY_Z:
-					want = -1
-				KEY_SPACE, KEY_X:
-					want = 1
-		else:  # ←/A = 왼쪽 계단, →/D = 오른쪽 계단
-			match e.keycode:
-				KEY_LEFT, KEY_A:
-					want = -1
-				KEY_RIGHT, KEY_D:
-					want = 1
+		# 키보드는 항상 원작 방식: Shift = 방향 전환, Space = 오르기
+		match e.keycode:
+			KEY_SHIFT:
+				_act(true)
+			KEY_SPACE:
+				_act(false)
+		return
 	if want == 0:
 		return
-	var turn := (want < 0) if classic else (want != facing)
+	_act((want < 0) if classic else (want != facing))
+
+
+func _act(turn: bool) -> void:
 	match state:
 		State.CLEAR:
 			_new_game()
@@ -146,12 +140,13 @@ func _toggle_mode() -> void:
 
 func _apply_mode_text() -> void:
 	var touch := DisplayServer.is_touchscreen_available()
-	if classic:
-		hint_l.text = "◀ 방향 전환" + ("" if touch else "\n(Shift  /  Z)")
-		hint_r.text = "오르기 ▲" + ("" if touch else "\n(Space  /  X)")
+	mode_btn.visible = touch
+	if classic or not touch:
+		hint_l.text = "◀ 방향 전환" + ("" if touch else "\n(Shift)")
+		hint_r.text = "오르기 ▲" + ("" if touch else "\n(Space)")
 	else:
-		hint_l.text = "◀ 왼쪽 계단" + ("" if touch else "\n(←  /  A)")
-		hint_r.text = "오른쪽 계단 ▶" + ("" if touch else "\n(→  /  D)")
+		hint_l.text = "◀ 왼쪽 계단"
+		hint_r.text = "오른쪽 계단 ▶"
 	mode_btn.text = "조작 방식: %s   [여기를 눌러 바꾸기]" % ("원작 (방향 전환 / 오르기)" if classic else "좌우 탭")
 
 
