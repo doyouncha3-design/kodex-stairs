@@ -23,7 +23,7 @@
 | `docs/` | 웹 내보내기 결과. GitHub Pages 가 이 폴더를 서비스 |
 | `export_presets.cfg` | Web(스레드 없음), Android, iOS 프리셋 |
 
-## 그림 바꾸기
+## 그림 바꾸기 (만들 목록은 ASSETS.md)
 
 같은 파일명으로 `assets/` 에 덮어쓰고 Godot 에서 다시 내보내면 끝.
 

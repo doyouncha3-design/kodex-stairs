@@ -7,9 +7,9 @@ const CAM_OFFSET := Vector2(0, -230)
 const CFG := "user://settings.cfg"
 const StairScene := preload("res://scenes/Stair.tscn")
 
-enum State { READY, PLAYING, FALLING, CLEAR }
+enum State { TITLE, READY, PLAYING, FALLING, CLEAR }
 
-var state := State.READY
+var state := State.TITLE
 var dirs: Array[int] = []
 var stair_pos: Array[Vector2] = []
 var idx := 0          # 서 있는 계단 번호 == 수익률 %
@@ -32,6 +32,8 @@ var delta_tw: Tween
 @onready var energy_fill: ColorRect = %EnergyFill
 @onready var overlay: ColorRect = %Overlay
 @onready var msg: Label = %Msg
+@onready var title: Label = %Title
+@onready var start_btn: Button = %StartBtn
 @onready var flash: ColorRect = %Flash
 @onready var hint_l: Label = %HintL
 @onready var hint_r: Label = %HintR
@@ -40,6 +42,7 @@ var delta_tw: Tween
 
 func _ready() -> void:
 	_load_cfg()
+	start_btn.pressed.connect(_on_start_pressed)
 	_apply_mode_text()
 	_new_game()
 
@@ -65,20 +68,37 @@ func _new_game() -> void:
 	facing = dirs[1]
 	energy = 1.0
 	elapsed = 0.0
-	state = State.READY
+	state = State.TITLE
 	_place_player()
 	cam.position = player.position + CAM_OFFSET
 	_update_hud()
+	_show_overlay("KODEX\n수익률 계단", "한 칸 = +1%\n200%까지 가장 빨리 오르세요\n\n잘못 밟으면 -30%\n게이지가 비어도 -30%", "시작")
+
+
+func _show_overlay(t: String, m: String, btn: String) -> void:
+	var touch := DisplayServer.is_touchscreen_available()
+	title.text = t
+	msg.text = m + ("" if touch else "\n\nSpace 키를 눌러 %s" % btn)
+	start_btn.text = btn
+	start_btn.visible = touch
+	mode_btn.visible = touch and state == State.TITLE
 	overlay.visible = true
-	msg.text = "KODEX 수익률 계단
 
-한 칸 = +1%
-200%까지 가장 빨리 오르세요
 
-잘못 밟으면 -30%
-게이지가 비어도 -30%
+func _start() -> void:
+	overlay.visible = false
+	state = State.READY
+	delta_label.text = "탭해서 출발!" if DisplayServer.is_touchscreen_available() else "Space로 출발!"
+	delta_label.modulate = Color(1, 0.85, 0.4)
+	delta_label.position.y = 270.0
 
-탭하여 시작"
+
+func _on_start_pressed() -> void:
+	if state == State.TITLE:
+		_start()
+	elif state == State.CLEAR:
+		_new_game()
+		_start()
 
 
 func _place_player() -> void:
@@ -101,35 +121,34 @@ func _process(dt: float) -> void:
 
 
 func _input(e: InputEvent) -> void:
-	var want := 0  # 좌우 모드: -1 왼쪽 / 1 오른쪽. 원작 모드: -1 방향 전환 / 1 오르기
-	if e is InputEventScreenTouch and e.pressed:
-		if overlay.visible and mode_btn.get_global_rect().has_point(e.position):
-			_toggle_mode()
-			return
-		want = -1 if e.position.x < get_viewport().get_visible_rect().size.x * 0.5 else 1
-	elif e is InputEventKey and e.pressed and not e.echo:
-		# 키보드는 항상 원작 방식: Shift = 방향 전환, Space = 오르기
-		match e.keycode:
-			KEY_SHIFT:
-				_act(true)
-			KEY_SPACE:
-				_act(false)
+	if e is InputEventKey and e.pressed and not e.echo:
+		# 키보드: Space = 시작/오르기, Shift = 방향 전환
+		match state:
+			State.TITLE, State.CLEAR:
+				if e.keycode == KEY_SPACE:
+					_on_start_pressed()
+			State.READY, State.PLAYING:
+				if e.keycode == KEY_SHIFT:
+					_act(true)
+				elif e.keycode == KEY_SPACE:
+					_act(false)
 		return
-	if want == 0:
+	if not (e is InputEventScreenTouch and e.pressed):
 		return
-	_act((want < 0) if classic else (want != facing))
+	match state:
+		State.TITLE:  # 시작은 버튼으로. 여기서는 조작 방식 토글만
+			if mode_btn.get_global_rect().has_point(e.position):
+				_toggle_mode()
+		State.READY, State.PLAYING:
+			var right: bool = e.position.x >= get_viewport().get_visible_rect().size.x * 0.5
+			_act((not right) if classic else ((1 if right else -1) != facing))
 
 
 func _act(turn: bool) -> void:
-	match state:
-		State.CLEAR:
-			_new_game()
-		State.READY:
-			overlay.visible = false
-			state = State.PLAYING
-			_step(turn)
-		State.PLAYING:
-			_step(turn)
+	if state == State.READY:
+		state = State.PLAYING
+	if state == State.PLAYING:
+		_step(turn)
 
 
 func _toggle_mode() -> void:
@@ -196,14 +215,16 @@ func _clear() -> void:
 		best = elapsed
 		_save_cfg()
 	_update_hud()
-	overlay.visible = true
-	msg.text = "200% 달성!\n\n기록  %.2f초\n최고  %.2f초\n\n탭하여 다시 시작" % [elapsed, best]
+	_show_overlay("200% 달성!", "기록  %.2f초\n최고  %.2f초" % [elapsed, best], "다시 하기")
 
 
 func _update_hud() -> void:
 	pct_label.text = "%d%%" % idx
 	timer_label.text = "%.2f초" % elapsed
 	best_label.text = ("최고 %.2f초" % best) if best > 0.0 else "최고 --"
+	timer_label.visible = state != State.TITLE
+	pct_label.visible = state != State.TITLE
+	energy_bg.visible = state != State.TITLE
 	energy_fill.size.x = energy_bg.size.x * energy
 	energy_fill.color = Color(0.2, 0.9, 0.4) if energy > 0.3 else Color(1, 0.35, 0.3)
 
