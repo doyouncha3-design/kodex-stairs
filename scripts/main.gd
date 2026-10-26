@@ -4,7 +4,7 @@ extends Node2D
 const STEP_W := 120.0
 const STEP_H := 60.0
 const CAM_OFFSET := Vector2(0, -230)
-const SAVE := "user://best.save"
+const CFG := "user://settings.cfg"
 const StairScene := preload("res://scenes/Stair.tscn")
 
 enum State { READY, PLAYING, FALLING, CLEAR }
@@ -17,6 +17,7 @@ var facing := 1
 var energy := 1.0
 var elapsed := 0.0
 var best := 0.0
+var classic := false   # true = 원작 방식(방향 전환/오르기), false = 좌우 탭
 var delta_tw: Tween
 
 @onready var stairs: Node2D = $Stairs
@@ -32,10 +33,14 @@ var delta_tw: Tween
 @onready var overlay: ColorRect = %Overlay
 @onready var msg: Label = %Msg
 @onready var flash: ColorRect = %Flash
+@onready var hint_l: Label = %HintL
+@onready var hint_r: Label = %HintR
+@onready var mode_btn: Label = %ModeBtn
 
 
 func _ready() -> void:
-	best = _load_best()
+	_load_cfg()
+	_apply_mode_text()
 	_new_game()
 
 
@@ -65,7 +70,15 @@ func _new_game() -> void:
 	cam.position = player.position + CAM_OFFSET
 	_update_hud()
 	overlay.visible = true
-	msg.text = "KODEX 수익률 계단\n\n한 칸 = +1%\n200%까지 가장 빨리 오르세요\n\n잘못 밟으면 -30%\n게이지가 비어도 -30%\n\n왼쪽 탭: 방향 전환   오른쪽 탭: 오르기\n\n탭하여 시작"
+	msg.text = "KODEX 수익률 계단
+
+한 칸 = +1%
+200%까지 가장 빨리 오르세요
+
+잘못 밟으면 -30%
+게이지가 비어도 -30%
+
+탭하여 시작"
 
 
 func _place_player() -> void:
@@ -79,7 +92,8 @@ func _process(dt: float) -> void:
 	if state != State.PLAYING:
 		return
 	elapsed += dt
-	energy -= dt * Rules.drain_per_sec(idx)
+	if idx > 0:  # 바닥(0%)에서는 게이지가 줄지 않는다
+		energy -= dt * Rules.drain_per_sec(idx)
 	if energy <= 0.0:
 		energy = 0.0
 		_fall()
@@ -87,26 +101,47 @@ func _process(dt: float) -> void:
 
 
 func _input(e: InputEvent) -> void:
-	var turn := -1  # -1 없음, 1 방향 전환, 0 그대로 오르기
+	var want := 0  # 좌우 모드: -1 왼쪽 / 1 오른쪽. 원작 모드: -1 방향 전환 / 1 오르기
 	if e is InputEventScreenTouch and e.pressed:
-		turn = 1 if e.position.x < get_viewport().get_visible_rect().size.x * 0.5 else 0
+		if overlay.visible and mode_btn.get_global_rect().has_point(e.position):
+			_toggle_mode()
+			return
+		want = -1 if e.position.x < get_viewport().get_visible_rect().size.x * 0.5 else 1
 	elif e is InputEventKey and e.pressed and not e.echo:
 		match e.keycode:
 			KEY_LEFT, KEY_A:
-				turn = 1
-			KEY_RIGHT, KEY_D, KEY_SPACE, KEY_UP:
-				turn = 0
-	if turn < 0:
+				want = -1
+			KEY_RIGHT, KEY_D:
+				want = 1
+			KEY_M:
+				if overlay.visible:
+					_toggle_mode()
+				return
+	if want == 0:
 		return
+	var turn := (want < 0) if classic else (want != facing)
 	match state:
 		State.CLEAR:
 			_new_game()
 		State.READY:
 			overlay.visible = false
 			state = State.PLAYING
-			_step(turn == 1)
+			_step(turn)
 		State.PLAYING:
-			_step(turn == 1)
+			_step(turn)
+
+
+func _toggle_mode() -> void:
+	classic = not classic
+	_save_cfg()
+	_apply_mode_text()
+
+
+func _apply_mode_text() -> void:
+	var touch := DisplayServer.is_touchscreen_available()
+	hint_l.text = ("◀ 방향 전환" if classic else "◀ 왼쪽 계단") + ("" if touch else "\n(←  /  A)")
+	hint_r.text = ("오르기 ▲" if classic else "오른쪽 계단 ▶") + ("" if touch else "\n(→  /  D)")
+	mode_btn.text = "조작 방식: %s   [여기를 눌러 바꾸기]" % ("원작 (방향 전환 / 오르기)" if classic else "좌우 탭")
 
 
 func _step(turn: bool) -> void:
@@ -153,7 +188,7 @@ func _clear() -> void:
 	state = State.CLEAR
 	if best == 0.0 or elapsed < best:
 		best = elapsed
-		_save_best()
+		_save_cfg()
 	_update_hud()
 	overlay.visible = true
 	msg.text = "200% 달성!\n\n기록  %.2f초\n최고  %.2f초\n\n탭하여 다시 시작" % [elapsed, best]
@@ -195,14 +230,15 @@ func _shake() -> void:
 	tw.tween_property(cam, "offset", Vector2.ZERO, 0.04)
 
 
-func _load_best() -> float:
-	if not FileAccess.file_exists(SAVE):
-		return 0.0
-	var f := FileAccess.open(SAVE, FileAccess.READ)
-	return f.get_float() if f else 0.0
+func _load_cfg() -> void:
+	var c := ConfigFile.new()
+	if c.load(CFG) == OK:
+		best = c.get_value("game", "best", 0.0)
+		classic = c.get_value("game", "classic", false)
 
 
-func _save_best() -> void:
-	var f := FileAccess.open(SAVE, FileAccess.WRITE)
-	if f:
-		f.store_float(best)
+func _save_cfg() -> void:
+	var c := ConfigFile.new()
+	c.set_value("game", "best", best)
+	c.set_value("game", "classic", classic)
+	c.save(CFG)
