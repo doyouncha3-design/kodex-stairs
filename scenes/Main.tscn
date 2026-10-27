@@ -34,6 +34,14 @@ texture = ExtResource("2")
 expand_mode = 1
 stretch_mode = 6
 
+[node name="Far" type="Parallax2D" parent="."]
+scroll_scale = Vector2(0.3, 0.3)
+repeat_size = Vector2(720, 1280)
+repeat_times = 3
+
+[node name="Sprite2D" type="Sprite2D" parent="Far"]
+scale = Vector2(0.5, 0.5)
+
 [node name="Stairs" type="Node2D" parent="."]
 
 [node name="Player" parent="." instance=ExtResource("3")]
@@ -156,6 +164,18 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0.72)
+
+[node name="Logo" type="TextureRect" parent="UI/Overlay"]
+unique_name_in_owner = true
+visible = false
+anchor_right = 1.0
+offset_left = 60.0
+offset_top = 150.0
+offset_right = -60.0
+offset_bottom = 420.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Title" type="Label" parent="UI/Overlay"]
 unique_name_in_owner = true

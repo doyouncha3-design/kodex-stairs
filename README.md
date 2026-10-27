@@ -19,33 +19,25 @@
 | `scripts/rules.gd` | 규칙 상수와 순수 함수 (200칸, -10칸, 게이지 속도) |
 | `tests/test_rules.gd` | 규칙 헤드리스 검증 |
 | `tools/make_placeholders.gd` | 임시 PNG 생성기 |
+| `tools/import_art.gd` | `art/` 원본을 게임 규격으로 다듬는 도구 |
+| `art/` | ChatGPT 원본 그림 넣는 곳 (게임 용량에 안 들어감) |
+| `build.sh` | 한 번에 빌드 |
 | `assets/` | PNG, 한글 폰트 (Noto Sans KR Bold 서브셋, OFL) |
 | `docs/` | 웹 내보내기 결과. GitHub Pages 가 이 폴더를 서비스 |
 | `export_presets.cfg` | Web(스레드 없음), Android, iOS 프리셋 |
 
-## 그림 바꾸기 (만들 목록은 ASSETS.md)
+## 그림 바꾸기
 
-같은 파일명으로 `assets/` 에 덮어쓰고 Godot 에서 다시 내보내면 끝.
-
-| 파일 | 크기 | 기준점 |
-|---|---|---|
-| `assets/stair.png` | 280×140 | 윗면 중앙이 계단 위치. 윗면 높이 48px 에 숫자가 올라감 |
-| `assets/player.png` | 192×192 | 발바닥 중앙이 계단 위. 오른쪽을 보는 그림 (왼쪽은 자동 반전) |
-| `assets/bg.png` | 1440×2560 | 화면 비율에 맞춰 잘려서 채워짐 |
-| `icon.png` | 512×512 | 앱 아이콘, 웹 파비콘 |
-
-그림은 고해상도 폰에서 선명하도록 화면 기준(720×1280)의 2배 크기로 만들고, 씬에서 0.5 배로 줄여 쓴다.
-크기를 바꾸려면 `scenes/Stair.tscn` 의 `offset` 과 `scripts/main.gd` 의 `STEP_W`, `STEP_H` 만 맞추면 된다.
-캐릭터 애니메이션을 넣을 때는 `Player.tscn` 의 `Sprite2D` 를 `AnimatedSprite2D` 로 바꾸면 되고, 스크립트는 `sprite` 변수의 타입만 바꾸면 된다.
+ChatGPT 로 만든 그림을 `art/` 에 정해진 파일명으로 넣고 `./build.sh` 를 실행하면 된다.
+만들 그림 목록, 순서, 프롬프트, 규칙은 [ART_GUIDE.md](ART_GUIDE.md) 에 있다.
 
 ## 빌드 (터미널)
 
 ```bash
-G="$HOME/Downloads/Godot.app/Contents/MacOS/Godot"
-"$G" --headless --path . --import
-"$G" --headless --path . --script tests/test_rules.gd
-"$G" --headless --path . --export-release Web "$PWD/docs/index.html"
+./build.sh
 ```
+
+그림 다듬기, 가져오기, 규칙 검사, 웹 내보내기를 차례로 한다. Godot 위치가 다르면 `GODOT=/경로/Godot ./build.sh`.
 
 로컬 확인: `python3 -m http.server 8765 --directory docs` 후 http://localhost:8765
 

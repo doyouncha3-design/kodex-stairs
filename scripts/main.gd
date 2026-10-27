@@ -19,6 +19,14 @@ var elapsed := 0.0
 var best := 0.0
 var classic := false   # true = 원작 방식(방향 전환/오르기), false = 좌우 탭
 var delta_tw: Tween
+var climb_t := 0.0     # 오르기 포즈를 보여줄 남은 시간
+
+# assets/ 에 파일이 있으면 쓰고 없으면 기본 그림. 목록과 규격은 ART_GUIDE.md
+var tex_player: Texture2D = _tex("player")
+var tex_climb: Texture2D = _tex("player_climb", tex_player)
+var tex_fall: Texture2D = _tex("player_fall", tex_player)
+var tex_win: Texture2D = _tex("player_win", tex_player)
+var tex_stairs: Array[Texture2D] = []  # 0~49, 50~99, 100~149, 150~199, 200
 
 @onready var stairs: Node2D = $Stairs
 @onready var player: Node2D = $Player
@@ -38,13 +46,41 @@ var delta_tw: Tween
 @onready var hint_l: Label = %HintL
 @onready var hint_r: Label = %HintR
 @onready var mode_btn: Label = %ModeBtn
+@onready var logo: TextureRect = %Logo
 
 
 func _ready() -> void:
 	_load_cfg()
+	_apply_art()
 	start_btn.pressed.connect(_on_start_pressed)
 	_apply_mode_text()
 	_new_game()
+
+
+static func _tex(key: String, fallback: Texture2D = null) -> Texture2D:
+	var path := "res://assets/%s.png" % key
+	return load(path) if ResourceLoader.exists(path) else fallback
+
+
+func _apply_art() -> void:
+	var base := _tex("stair")
+	tex_stairs = [base]
+	for key in ["stair_50", "stair_100", "stair_150", "stair_goal"]:
+		tex_stairs.append(_tex(key, tex_stairs[-1]))
+	$Far/Sprite2D.texture = _tex("bg_far")
+	logo.texture = _tex("logo")
+	var btn := _tex("btn_start")
+	if btn:
+		for st in ["normal", "hover", "pressed"]:
+			var box := StyleBoxTexture.new()
+			box.texture = btn
+			if st == "pressed":
+				box.modulate_color = Color(0.75, 0.75, 0.75)
+			start_btn.add_theme_stylebox_override(st, box)
+
+
+func _stair_tex(i: int) -> Texture2D:
+	return tex_stairs[4] if i >= Rules.TOTAL else tex_stairs[mini(i / 50, 3)]
 
 
 func _new_game() -> void:
@@ -62,6 +98,7 @@ func _new_game() -> void:
 		var s := StairScene.instantiate()
 		s.position = p
 		s.z_index = Rules.TOTAL - i
+		s.texture = _stair_tex(i)
 		s.get_node("Label").text = "%d%%" % i
 		stairs.add_child(s)
 	idx = 0
@@ -78,6 +115,8 @@ func _new_game() -> void:
 func _show_overlay(t: String, m: String, btn: String) -> void:
 	var touch := DisplayServer.is_touchscreen_available()
 	title.text = t
+	logo.visible = logo.texture != null and state == State.TITLE
+	title.visible = not logo.visible
 	msg.text = m + ("" if touch else "\n\nSpace 키를 눌러 %s" % btn)
 	start_btn.text = btn
 	start_btn.visible = touch
@@ -102,6 +141,7 @@ func _on_start_pressed() -> void:
 
 
 func _place_player() -> void:
+	sprite.texture = tex_player
 	player.position = stair_pos[idx]
 	player.z_index = Rules.TOTAL - idx + 1
 	sprite.flip_h = facing < 0
@@ -109,6 +149,10 @@ func _place_player() -> void:
 
 func _process(dt: float) -> void:
 	cam.position = cam.position.lerp(player.position + CAM_OFFSET, minf(1.0, 12.0 * dt))
+	if climb_t > 0.0:
+		climb_t -= dt
+		if climb_t <= 0.0 and state == State.PLAYING:
+			sprite.texture = tex_player
 	if state != State.PLAYING:
 		return
 	elapsed += dt
@@ -178,6 +222,8 @@ func _step(turn: bool) -> void:
 	idx += 1
 	energy = minf(1.0, energy + Rules.ENERGY_GAIN)
 	_place_player()
+	sprite.texture = tex_climb
+	climb_t = 0.12
 	sprite.scale = Vector2(1.2, 0.8)
 	create_tween().tween_property(sprite, "scale", Vector2.ONE, 0.12)
 	_pop_pct()
@@ -188,6 +234,7 @@ func _step(turn: bool) -> void:
 
 func _fall() -> void:
 	state = State.FALLING
+	sprite.texture = tex_fall
 	_show_delta("-%d%%" % Rules.FALL_STEPS, Color(1, 0.3, 0.3))
 	flash.color.a = 0.45
 	create_tween().tween_property(flash, "color:a", 0.0, 0.5)
@@ -211,6 +258,7 @@ func _land() -> void:
 
 func _clear() -> void:
 	state = State.CLEAR
+	sprite.texture = tex_win
 	if best == 0.0 or elapsed < best:
 		best = elapsed
 		_save_cfg()
