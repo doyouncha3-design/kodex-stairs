@@ -29,6 +29,7 @@
 | `scripts/main.gd` | 게임 흐름 (입력, 추락, 클리어, 기록 저장) |
 | `scripts/rules.gd` | 규칙 상수와 순수 함수 (200칸, -10칸, 게이지 속도) |
 | `tests/test_rules.gd` | 규칙 헤드리스 검증 |
+| `tests/test_clear.gd` | 결과 화면이 키보드·게임 터치로 안 넘어가는지 검증 |
 | `tools/make_placeholders.gd` | 임시 PNG 생성기 |
 | `tools/import_art.gd` | `art/` 원본을 게임 규격으로 다듬는 도구 |
 | `art/` | ChatGPT 원본 그림 넣는 곳 (게임 용량에 안 들어감) |

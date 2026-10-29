@@ -5,6 +5,7 @@ const STEP_W := 120.0
 const STEP_H := 60.0
 const CAM_OFFSET := Vector2(0, -230)
 const CFG := "user://settings.cfg"
+const AGAIN_DELAY := 1.5  # 결과 화면 버튼이 눌리기까지 기다리는 초. 마지막 연타가 버튼을 누르지 않게
 const StairScene := preload("res://scenes/Stair.tscn")
 
 enum State { TITLE, READY, PLAYING, FALLING, CLEAR }
@@ -48,12 +49,20 @@ var tex_stairs: Array[Texture2D] = []  # 0~49, 50~99, 100~149, 150~199, 200
 @onready var mode_btn: Label = %ModeBtn
 @onready var logo: TextureRect = %Logo
 @onready var logo_top: TextureRect = %LogoTop
+@onready var slogan_box: Panel = %SloganBox
+@onready var intro: Control = %Intro
+@onready var clear_box: Control = %Clear
+@onready var win_pic: TextureRect = %WinPic
+@onready var big_time: Label = %BigTime
+@onready var best_line: Label = %BestLine
+@onready var again_btn: Button = %AgainBtn
 
 
 func _ready() -> void:
 	_load_cfg()
 	_apply_art()
 	start_btn.pressed.connect(_on_start_pressed)
+	again_btn.pressed.connect(_on_again_pressed)
 	_apply_mode_text()
 	_new_game()
 
@@ -71,6 +80,7 @@ func _apply_art() -> void:
 	$Far/Sprite2D.texture = _tex("bg_far")
 	logo.texture = _tex("logo")
 	logo_top.texture = logo.texture
+	win_pic.texture = tex_win
 	var btn := _tex("btn_start")
 	if btn:
 		for st in ["normal", "hover", "pressed"]:
@@ -118,18 +128,20 @@ func _show_overlay(t: String, m: String, btn: String) -> void:
 	var touch := DisplayServer.is_touchscreen_available()
 	title.text = t
 	logo.visible = logo.texture != null and state == State.TITLE
-	logo_top.visible = false
+	slogan_box.visible = false
 	title.visible = not logo.visible
 	msg.text = m + ("" if touch else "\n\nSpace 키를 눌러 %s" % btn)
 	start_btn.text = btn
 	start_btn.visible = touch
 	mode_btn.visible = touch and state == State.TITLE
+	intro.visible = true
+	clear_box.visible = false
 	overlay.visible = true
 
 
 func _start() -> void:
 	overlay.visible = false
-	logo_top.visible = logo_top.texture != null
+	slogan_box.visible = logo_top.texture != null
 	state = State.READY
 	delta_label.text = "탭해서 출발!" if DisplayServer.is_touchscreen_available() else "Space로 출발!"
 	delta_label.modulate = Color(1, 0.85, 0.4)
@@ -139,9 +151,11 @@ func _start() -> void:
 func _on_start_pressed() -> void:
 	if state == State.TITLE:
 		_start()
-	elif state == State.CLEAR:
-		_new_game()
-		_start()
+
+
+func _on_again_pressed() -> void:
+	_new_game()
+	_start()
 
 
 func _place_player() -> void:
@@ -172,7 +186,7 @@ func _input(e: InputEvent) -> void:
 	if e is InputEventKey and e.pressed and not e.echo:
 		# 키보드: Space = 시작/오르기, Shift = 방향 전환
 		match state:
-			State.TITLE, State.CLEAR:
+			State.TITLE:  # 결과 화면은 키보드로 넘기지 않는다. 버튼만
 				if e.keycode == KEY_SPACE:
 					_on_start_pressed()
 			State.READY, State.PLAYING:
@@ -263,20 +277,30 @@ func _land() -> void:
 func _clear() -> void:
 	state = State.CLEAR
 	sprite.texture = tex_win
-	if best == 0.0 or elapsed < best:
+	var record := best == 0.0 or elapsed < best
+	if record:
 		best = elapsed
 		_save_cfg()
 	_update_hud()
-	_show_overlay("200% 달성!", "기록  %.2f초\n최고  %.2f초" % [elapsed, best], "다시 하기")
+	slogan_box.visible = false
+	big_time.text = "%.2f초" % elapsed
+	best_line.text = "신기록!" if record else "최고 기록 %.2f초" % best
+	intro.visible = false
+	clear_box.visible = true
+	overlay.visible = true
+	again_btn.disabled = true
+	get_tree().create_timer(AGAIN_DELAY).timeout.connect(func() -> void: again_btn.disabled = false)
 
 
 func _update_hud() -> void:
 	pct_label.text = "%d%%" % idx
 	timer_label.text = "%.2f초" % elapsed
 	best_label.text = ("최고 %.2f초" % best) if best > 0.0 else "최고 --"
-	timer_label.visible = state != State.TITLE
-	pct_label.visible = state != State.TITLE
-	energy_bg.visible = state != State.TITLE
+	var hud := state != State.TITLE and state != State.CLEAR
+	timer_label.visible = hud
+	best_label.visible = hud
+	pct_label.visible = hud
+	energy_bg.visible = hud
 	energy_fill.size.x = energy_bg.size.x * energy
 	energy_fill.color = Color(0.2, 0.9, 0.4) if energy > 0.3 else Color(1, 0.35, 0.3)
 

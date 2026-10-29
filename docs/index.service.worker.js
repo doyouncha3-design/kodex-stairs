@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1793274583|947418';
+const CACHE_VERSION = '1793275253|920755';
 /** @type {string} */
 const CACHE_PREFIX = 'KODEX 수익률 계단-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
@@ -20,11 +20,11 @@ const CACHED_FILES = ["index.html","index.js","index.offline.html","index.icon.p
 const CACHEABLE_FILES = ["index.wasm","index.pck"];
 const FULL_CACHE = CACHED_FILES.concat(CACHEABLE_FILES);
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', (event) => { self.skipWaiting();
 	event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(CACHED_FILES)));
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', (event) => { self.clients.claim();
 	event.waitUntil(caches.keys().then(
 		function (keys) {
 			// Remove old caches.

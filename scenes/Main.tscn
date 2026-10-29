@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/bg.png" id="2"]
@@ -20,6 +20,20 @@ corner_radius_bottom_left = 24
 
 [sub_resource type="StyleBoxEmpty" id="btn_focus"]
 
+[sub_resource type="StyleBoxFlat" id="slogan_bg"]
+bg_color = Color(1, 1, 1, 0.82)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+
+[sub_resource type="StyleBoxFlat" id="btn_wait"]
+bg_color = Color(0.62, 0.72, 0.92, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+
 [node name="Main" type="Node2D"]
 script = ExtResource("1")
 
@@ -33,18 +47,6 @@ mouse_filter = 2
 texture = ExtResource("2")
 expand_mode = 1
 stretch_mode = 6
-
-[node name="LogoTop" type="TextureRect" parent="Background"]
-unique_name_in_owner = true
-visible = false
-anchor_right = 1.0
-offset_left = 110.0
-offset_top = 70.0
-offset_right = -110.0
-offset_bottom = 205.0
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 5
 
 [node name="Far" type="Parallax2D" parent="."]
 scroll_scale = Vector2(0.3, 0.3)
@@ -61,6 +63,30 @@ scale = Vector2(0.5, 0.5)
 [node name="Camera2D" type="Camera2D" parent="."]
 
 [node name="UI" type="CanvasLayer" parent="."]
+
+[node name="SloganBox" type="Panel" parent="UI"]
+unique_name_in_owner = true
+visible = false
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -250.0
+offset_top = 66.0
+offset_right = 250.0
+offset_bottom = 200.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("slogan_bg")
+
+[node name="LogoTop" type="TextureRect" parent="UI/SloganBox"]
+unique_name_in_owner = true
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 10.0
+offset_right = -14.0
+offset_bottom = -10.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Timer" type="Label" parent="UI"]
 unique_name_in_owner = true
@@ -189,7 +215,15 @@ anchor_bottom = 1.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.88)
 
-[node name="Logo" type="TextureRect" parent="UI/Overlay"]
+[node name="Intro" type="Control" parent="UI/Overlay"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Logo" type="TextureRect" parent="UI/Overlay/Intro"]
 unique_name_in_owner = true
 visible = false
 anchor_right = 1.0
@@ -201,7 +235,7 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Title" type="Label" parent="UI/Overlay"]
+[node name="Title" type="Label" parent="UI/Overlay/Intro"]
 unique_name_in_owner = true
 anchor_right = 1.0
 offset_top = 150.0
@@ -213,7 +247,7 @@ text = "KODEX
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Msg" type="Label" parent="UI/Overlay"]
+[node name="Msg" type="Label" parent="UI/Overlay/Intro"]
 unique_name_in_owner = true
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -228,7 +262,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="StartBtn" type="Button" parent="UI/Overlay"]
+[node name="StartBtn" type="Button" parent="UI/Overlay/Intro"]
 unique_name_in_owner = true
 anchor_left = 0.5
 anchor_top = 1.0
@@ -247,8 +281,9 @@ theme_override_styles/hover = SubResource("btn_normal")
 theme_override_styles/pressed = SubResource("btn_pressed")
 theme_override_styles/focus = SubResource("btn_focus")
 text = "시작"
+focus_mode = 0
 
-[node name="ModeBtn" type="Label" parent="UI/Overlay"]
+[node name="ModeBtn" type="Label" parent="UI/Overlay/Intro"]
 unique_name_in_owner = true
 anchor_top = 1.0
 anchor_right = 1.0
@@ -260,3 +295,101 @@ theme_override_font_sizes/font_size = 28
 text = "조작 방식"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Clear" type="Control" parent="UI/Overlay"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="ClearTitle" type="Label" parent="UI/Overlay/Clear"]
+anchor_right = 1.0
+offset_top = 60.0
+offset_bottom = 170.0
+theme_override_colors/font_color = Color(0.84, 0.16, 0.16, 1)
+theme_override_font_sizes/font_size = 80
+text = "축하합니다!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="WinPic" type="TextureRect" parent="UI/Overlay/Clear"]
+unique_name_in_owner = true
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -120.0
+offset_top = 170.0
+offset_right = 120.0
+offset_bottom = 400.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ClearMsg" type="Label" parent="UI/Overlay/Clear"]
+anchor_right = 1.0
+offset_left = 30.0
+offset_top = 405.0
+offset_right = -30.0
+offset_bottom = 570.0
+theme_override_colors/font_color = Color(0.06, 0.13, 0.3, 1)
+theme_override_font_sizes/font_size = 42
+text = "연금 Kodex하셨군요!
+노후 걱정 없으시겠어요!
+멋지십니다!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TimeCaption" type="Label" parent="UI/Overlay/Clear"]
+anchor_right = 1.0
+offset_top = 590.0
+offset_bottom = 635.0
+theme_override_colors/font_color = Color(0.3, 0.38, 0.55, 1)
+theme_override_font_sizes/font_size = 30
+text = "200% 달성까지 걸린 시간"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BigTime" type="Label" parent="UI/Overlay/Clear"]
+unique_name_in_owner = true
+anchor_right = 1.0
+offset_top = 630.0
+offset_bottom = 780.0
+theme_override_colors/font_color = Color(0.12, 0.35, 0.96, 1)
+theme_override_font_sizes/font_size = 136
+text = "0.00초"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BestLine" type="Label" parent="UI/Overlay/Clear"]
+unique_name_in_owner = true
+anchor_right = 1.0
+offset_top = 780.0
+offset_bottom = 830.0
+theme_override_colors/font_color = Color(0.06, 0.13, 0.3, 1)
+theme_override_font_sizes/font_size = 32
+text = "최고 기록 0.00초"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AgainBtn" type="Button" parent="UI/Overlay/Clear"]
+unique_name_in_owner = true
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -220.0
+offset_top = 860.0
+offset_right = 220.0
+offset_bottom = 970.0
+focus_mode = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_disabled_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 44
+theme_override_styles/normal = SubResource("btn_normal")
+theme_override_styles/hover = SubResource("btn_normal")
+theme_override_styles/pressed = SubResource("btn_pressed")
+theme_override_styles/disabled = SubResource("btn_wait")
+theme_override_styles/focus = SubResource("btn_focus")
+text = "다시 도전하기"

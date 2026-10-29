@@ -21,7 +21,7 @@ const SPEC := {
 	"stair_goal": [Vector2i(280, 140), "top", true],
 	"bg": [Vector2i(1440, 2560), "cover", false],
 	"bg_far": [Vector2i(1440, 2560), "cover", true],
-	"logo": [Vector2i(1200, 520), "center", true],
+	"logo": [Vector2i(1200, 350), "center", true],
 	"btn_start": [Vector2i(880, 240), "center", true],
 	"icon": [Vector2i(512, 512), "cover", false],
 }
