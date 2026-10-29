@@ -47,6 +47,7 @@ var tex_stairs: Array[Texture2D] = []  # 0~49, 50~99, 100~149, 150~199, 200
 @onready var hint_r: Label = %HintR
 @onready var mode_btn: Label = %ModeBtn
 @onready var logo: TextureRect = %Logo
+@onready var logo_top: TextureRect = %LogoTop
 
 
 func _ready() -> void:
@@ -69,6 +70,7 @@ func _apply_art() -> void:
 		tex_stairs.append(_tex(key, tex_stairs[-1]))
 	$Far/Sprite2D.texture = _tex("bg_far")
 	logo.texture = _tex("logo")
+	logo_top.texture = logo.texture
 	var btn := _tex("btn_start")
 	if btn:
 		for st in ["normal", "hover", "pressed"]:
@@ -116,6 +118,7 @@ func _show_overlay(t: String, m: String, btn: String) -> void:
 	var touch := DisplayServer.is_touchscreen_available()
 	title.text = t
 	logo.visible = logo.texture != null and state == State.TITLE
+	logo_top.visible = false
 	title.visible = not logo.visible
 	msg.text = m + ("" if touch else "\n\nSpace 키를 눌러 %s" % btn)
 	start_btn.text = btn
@@ -126,10 +129,11 @@ func _show_overlay(t: String, m: String, btn: String) -> void:
 
 func _start() -> void:
 	overlay.visible = false
+	logo_top.visible = logo_top.texture != null
 	state = State.READY
 	delta_label.text = "탭해서 출발!" if DisplayServer.is_touchscreen_available() else "Space로 출발!"
 	delta_label.modulate = Color(1, 0.85, 0.4)
-	delta_label.position.y = 270.0
+	delta_label.position.y = 345.0
 
 
 func _on_start_pressed() -> void:
@@ -292,9 +296,9 @@ func _show_delta(t: String, c: Color) -> void:
 		delta_tw.kill()
 	delta_label.text = t
 	delta_label.modulate = c
-	delta_label.position.y = 270.0
+	delta_label.position.y = 345.0
 	delta_tw = create_tween().set_parallel(true)
-	delta_tw.tween_property(delta_label, "position:y", 230.0, 0.5)
+	delta_tw.tween_property(delta_label, "position:y", 305.0, 0.5)
 	delta_tw.tween_property(delta_label, "modulate:a", 0.0, 0.5).set_delay(0.15)
 
 

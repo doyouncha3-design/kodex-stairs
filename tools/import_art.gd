@@ -47,6 +47,7 @@ func _init() -> void:
 		if mode == "cover":
 			out = _cover(img, size)
 		else:
+			_drop_faint(img)
 			var used := img.get_used_rect()
 			if used.size == Vector2i.ZERO:
 				printerr("  ✗ %s: 전부 투명함" % path.get_file())
@@ -100,6 +101,15 @@ func _cut_background(img: Image, key: String) -> void:
 		if i >= w: stack.append(i - w)
 		if i < (h - 1) * w: stack.append(i + w)
 	img.set_data(w, h, false, Image.FORMAT_RGBA8, data)
+
+
+## ChatGPT 투명 PNG 가장자리의 거의 안 보이는 잡티를 지운다. 안 지우면 여백 자르기가 잡티까지 포함해 그림이 작아진다.
+func _drop_faint(img: Image) -> void:
+	var data := img.get_data()
+	for o in range(3, data.size(), 4):
+		if data[o] < 26:  # 알파 10% 미만
+			data[o] = 0
+	img.set_data(img.get_width(), img.get_height(), false, Image.FORMAT_RGBA8, data)
 
 
 func _fit(img: Image, size: Vector2i, mode: String) -> Image:
